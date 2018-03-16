@@ -60,6 +60,24 @@ public class TxHandler {
      */
     public Transaction[] handleTxs(Transaction[] possibleTxs) {
         // IMPLEMENT THIS
+    	  java.util.Set<Transaction> validTxs = new java.util.HashSet<>();
+          for (Transaction tx : possibleTxs) {
+              if (isValidTx(tx)) {
+                  validTxs.add(tx);
+                  for (Transaction.Input in : tx.getInputs()) {
+                      UTXO utxo = new UTXO(in.prevTxHash, in.outputIndex);
+                      utxoPool.removeUTXO(utxo);
+                  }
+                  for (int i = 0; i < tx.numOutputs(); i++) {
+                      Transaction.Output out = tx.getOutput(i);
+                      UTXO utxo = new UTXO(tx.getHash(), i);
+                      utxoPool.addUTXO(utxo, out);
+                  }
+              }
+          }
+
+          Transaction[] validTxArray = new Transaction[validTxs.size()];
+          return validTxs.toArray(validTxArray);
+      }
     }
 
-}
